@@ -1,0 +1,135 @@
+Nur in dwm-editnew: bak.dmw.c.
+diff -u dwm-edit/config.h dwm-editnew/config.h
+--- dwm-edit/config.h	2021-10-03 20:04:03.702813734 +0200
++++ dwm-editnew/config.h	2021-10-03 23:53:53.162376148 +0200
+@@ -94,6 +94,7 @@
+ 
+ /* layout(s) */
+ static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
++static const float hfact     = 0.55; /* factor of master area hight size [0.05..0.95] */
+ static const int nmaster     = 1;    /* number of clients in master area */
+ static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+@@ -169,6 +170,10 @@
+ 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+ 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.10} }, //0.05
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.10} }, //0.05
++	//--custom
++	{ MODKEY|ShiftMask,             XK_h,      sethfact,       {.f = -0.10} }, //0.05
++	{ MODKEY|ShiftMask,             XK_l,      sethfact,       {.f = +0.10} }, //0.05
++	//++custom
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+Nur in dwm-editnew: drw.o.
+Nur in dwm-editnew: dwm.
+diff -u dwm-edit/dwm.c dwm-editnew/dwm.c
+--- dwm-edit/dwm.c	2021-10-03 23:28:19.003645973 +0200
++++ dwm-editnew/dwm.c	2021-10-04 01:54:32.978869605 +0200
+@@ -124,6 +124,7 @@
+ struct Monitor {
+ 	char ltsymbol[16];
+ 	float mfact;
++	float hfact;
+ 	int nmaster;
+ 	int num;
+ 	int by;               /* bar geometry */
+@@ -216,6 +217,7 @@
+ static void setfullscreen(Client *c, int fullscreen);
+ static void setlayout(const Arg *arg);
+ static void setmfact(const Arg *arg);
++static void sethfact(const Arg *arg);
+ static void setup(void);
+ static void seturgent(Client *c, int urg);
+ static void showhide(Client *c);
+@@ -678,6 +680,7 @@
+ 	m = ecalloc(1, sizeof(Monitor));
+ 	m->tagset[0] = m->tagset[1] = 1;
+ 	m->mfact = mfact;
++	m->hfact = hfact;
+ 	m->nmaster = nmaster;
+ 	m->showbar = showbar;
+ 	m->topbar = topbar;
+@@ -1659,6 +1662,22 @@
+ 	arrange(selmon);
+ }
+ 
++//test 
++void
++sethfact(const Arg *arg)
++{
++	float f;
++
++	if (!arg || !selmon->lt[selmon->sellt]->arrange)
++		return;
++	f = arg->f < 1.0 ? arg->f + selmon->hfact : arg->f - 1.0;
++	if (f < 0.05 || f > 0.95)
++		return;
++	selmon->hfact = f;
++	arrange(selmon);
++}
++
++
+ void
+ setup(void)
+ {
+@@ -1812,26 +1831,50 @@
+ tile(Monitor *m)
+ {
+ 	unsigned int i, n, h, mw, my, ty;
++	unsigned int mh; //new custom
+ 	Client *c;
+ 
+ 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+ 	if (n == 0)
+ 		return;
+ 
++//no clue, maybe change HEIGHT function
++//assumed ww = window width
++//is there a wh? -yes
++//m->nmaster - assumed "is master" boolean flag
++//n is probably the total number of windows
+ 	if (n > m->nmaster)
+-		mw = m->nmaster ? m->ww * m->mfact : 0;
++		mw = m->nmaster ? m->ww * m->mfact : 0; //this makes sense horz. master size change is only reasonable, when also other windows are displayed
+ 	else
+ 		mw = m->ww;
++
++	//if (n <= m->nmaster) -> the effect of this, is acctually only allowing the cange, when only master windows are available// --> effects all windows in the master area (*+0.5 -> makes smaller)//n assumed number/index of client //nmaster how much of these are in the master area --> height should only change in the master area
++	//if (n <= m->nmaster) //n assumed number/index of client //nmaster how much of these are in the master area --> height should only change in the master area$
++	if (n <= m->nmaster)
++		mh = m->nmaster ? m->wh * m->hfact : 0;
++	else
++		mh = m->wh;
++
+ 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
+ 		if (i < m->nmaster) {
+-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
++//			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
++//			h = (mh - my) / (MIN(n, m->nmaster) - i); //orig
++			if(m->nmaster > 1)
++				h = mh-my; 
++			else
++				h = 0;
++			if(i > 0)
++				h = (m->wh - h - my) / (MIN(n, m->nmaster) - i);
+ 			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0);
+-			if (my + HEIGHT(c) < m->wh)
++//			if (my + HEIGHT(c) < m->wh)
++			if (my + HEIGHT(c) < mh)
+ 				my += HEIGHT(c);
+ 		} else {
+-			h = (m->wh - ty) / (n - i);
++			//h = (m->wh - ty) / (n - i);
++			h = (mh - ty) / (n - i);
+ 			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), 0);
+-			if (ty + HEIGHT(c) < m->wh)
++//			if (ty + HEIGHT(c) < m->wh)
++			if (ty + HEIGHT(c) < mh)
+ 				ty += HEIGHT(c);
+ 		}
+ }
+Nur in dwm-editnew: dwm.o.
+Gemeinsame Unterverzeichnisse: dwm-edit/.git und dwm-editnew/.git.
+Nur in dwm-editnew: updatedwm.diff.
+Nur in dwm-editnew: util.o.
