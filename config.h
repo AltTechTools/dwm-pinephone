@@ -167,13 +167,13 @@ static Key keys[] = {
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 
-/*	{ 0,				XF86XK_AudioRaiseVolume,	spawn,	{.v = volumeUPcmd } },
+	{ 0,				XF86XK_AudioRaiseVolume,	spawn,	{.v = volumeUPcmd } },
 	{ 0,				XF86XK_AudioLowerVolume,	spawn,	{.v = volumeDwncmd } },
-	{ 0,				XF86XK_AudioPause,		spawn,	{.v = testcmd } },
+/*	{ 0,				XF86XK_AudioPause,		spawn,	{.v = testcmd } },
 	{ 0,				XF86XK_AudioMute,		spawn,	{.v = volumeMuteTglcmd } },
-
+*/
 	{ 0,				XF86XK_PowerOff,		spawn,	{.v = testcmd2 } },
-	{ 0,				XF86XK_PowerDown,		spawn,	{.v = testcmd2 } },
+/*	{ 0,				XF86XK_PowerDown,		spawn,	{.v = testcmd2 } },
 	{ 0,				XF86XK_Hibernate,		spawn,	{.v = testcmd2 } },
 	{ 0,				XF86XK_Sleep,			spawn,	{.v = testcmd2 } },
 	{ 0,				XF86XK_WakeUp,			spawn,	{.v = testcmd2 } },
