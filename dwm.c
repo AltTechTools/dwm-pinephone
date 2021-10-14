@@ -1554,7 +1554,8 @@ setfocus(Client *c)
 			XA_WINDOW, 32, PropModeReplace,
 			(unsigned char *) &(c->win), 1);
 		//tst FUD - calc by window size and set to center?
-		XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, 10, 10);
+		//x, y, w, h;
+		//XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, (c->w/2), (c->h/2));
 	}
 	sendevent(c, wmatom[WMTakeFocus]);
 }
