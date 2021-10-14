@@ -990,7 +990,7 @@ incnmaster(const Arg *arg)
 void
 incimmaster(const Arg *arg)
 {
-	selmon->immaster = MIN(MAX(selmon->immaster + arg->i, 0), selmon->nmaster);
+	selmon->immaster = MIN(MAX(selmon->immaster + arg->i, 1), selmon->nmaster);
 	arrange(selmon);
 }
 
