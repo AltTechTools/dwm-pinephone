@@ -1469,6 +1469,8 @@ setfocus(Client *c)
 		XChangeProperty(dpy, root, netatom[NetActiveWindow],
 			XA_WINDOW, 32, PropModeReplace,
 			(unsigned char *) &(c->win), 1);
+		//tst FUD - calc by window size and set to center?
+		XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, 10, 10);
 	}
 	sendevent(c, wmatom[WMTakeFocus]);
 }
