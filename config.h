@@ -5,7 +5,7 @@ static const unsigned int borderpx  = 8;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const int user_bh            = 120;        /* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
+static const int user_bh            = 240; //120;        /* 0 means that dwm will calculate bar height, >= 1 means dwm will user_bh as bar height */
 static const double defaultopacity  = 0.75;
 static const char *fonts[]          = { "monospace:size=22" };
 static const char dmenufont[]       = "monospace:size=22";
@@ -108,6 +108,7 @@ static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] 
 
 static const float hfact     = 0.55; /* factor of master area hight size [0.05..0.95] */
 static const int nmaster     = 2;    /* number of clients in master area */
+static const int immaster    = 2;    /* index of main master min. 1*/
 
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
@@ -165,6 +166,7 @@ XF86XK_Keyboard
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+	{ MODKEY|ShiftMask,             XK_p,      spawn,          {.v = customcmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 
 	{ 0,				XF86XK_AudioRaiseVolume,	spawn,	{.v = volumeUPcmd } },
@@ -184,6 +186,10 @@ static Key keys[] = {
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+
+	{ MODKEY|ShiftMask,             XK_i,      incimmaster,     {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_d,      incimmaster,     {.i = -1 } },
+
 
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.10} }, //0.05
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.10} }, //0.05

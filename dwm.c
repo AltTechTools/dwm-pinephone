@@ -118,6 +118,7 @@ struct Monitor {
 	float mfact;
 	float hfact;
 	int nmaster;
+	int immaster;
 	int num;
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
@@ -179,6 +180,7 @@ static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
 static void incnmaster(const Arg *arg);
+static void incimmaster(const Arg *arg);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
@@ -647,6 +649,7 @@ createmon(void)
 	m->mfact = mfact;
 	m->hfact = hfact;
 	m->nmaster = nmaster;
+	m->immaster = immaster;
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->lt[0] = &layouts[0];
@@ -838,6 +841,8 @@ focusmon(const Arg *arg)
 	unfocus(selmon->sel, 0);
 	selmon = m;
 	focus(NULL);
+	if (selmon->sel)
+		XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, selmon->sel->w/2, selmon->sel->h/2);
 }
 
 void
@@ -863,6 +868,7 @@ focusstack(const Arg *arg)
 	if (c) {
 		focus(c);
 		restack(selmon);
+		XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w/2, c->h/2);
 	}
 }
 
@@ -978,6 +984,13 @@ void
 incnmaster(const Arg *arg)
 {
 	selmon->nmaster = MAX(selmon->nmaster + arg->i, 0);
+	arrange(selmon);
+}
+
+void
+incimmaster(const Arg *arg)
+{
+	selmon->immaster = MIN(MAX(selmon->immaster + arg->i, 0), selmon->nmaster);
 	arrange(selmon);
 }
 
@@ -1781,7 +1794,7 @@ void
 tile(Monitor *m)
 {
 	unsigned int i, n, h, mw, my, ty, x ,y ,w;
-	unsigned int mh; //new custom
+	unsigned int mh, mmh, mmi; //new custom
 	Client *c;
 
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
@@ -1815,7 +1828,7 @@ tile(Monitor *m)
 //			else
 //				h = 0;
 			//if(i > 0)
-			mh = m->wh; //-my;
+//			mh = m->wh; //-my;
 //			if(m->nmaster>1)
 //			mh = m->wh/2; //basiclty 2 categories, master master window & normal master windows
 //			mh = mh-my;
@@ -1827,13 +1840,30 @@ tile(Monitor *m)
 //					mh = mh - (mh * hfact);
 //				}
 //			}
-			mh = mh-my;
+			mmh = m->wh * m->hfact; //space reserved for the "master master window"
+			mh = m->wh; //-mmh; //space for (other) master windows
+// for first mastermaster			mh = mh-my;
 			//h = (mh - my) /
-			if(n > 1 && MIN(n, m->nmaster)==2){
-				if(i==0)
-					h = mh * m->hfact;
-				else
-					h = mh;//h = mh / (MIN(n, m->nmaster-1)-i);
+			if(n > 1 && MIN(n, m->nmaster)>=2){
+				//for first as master master
+				//if(i==0) //try last
+				//	h = mh * m->hfact;
+				//else
+				//	h = mh;//h = mh / (MIN(n, m->nmaster-1)-i);
+				//for last
+				//if(i==MIN(2,MIN(n, m->nmaster))-1) //2 being a (todo) custom set up number
+				mmi=(MIN(MIN(n, m->nmaster), m->immaster)-1); //mastermaster index
+
+				if(i<mmi){
+					h=(mh-mmh-my)/(MIN(n, m->nmaster)-i-1);
+				}else if(i==mmi){
+					h=mmh;  //-my;
+					if(MIN(n, m->nmaster)-1>mmi)
+						h=h-my;
+					//mmh=0;
+				}else{
+					h=(m->wh-my)/(MIN(n, m->nmaster)-i);
+				}
 			} else {
 				h = mh / (MIN(n, m->nmaster) - i);
 			}
