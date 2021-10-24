@@ -138,7 +138,7 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 //static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_red, "-nf", col_white, "-sb", col_lightblue, "-sf", col_black, NULL };
 //static const char *termcmd[]  = { "st", NULL };
-static const char *termcmd[]  = { "kgx", NULL };
+static const char *termcmd[]  = { "./.dwm/dwm-default-terminal.ln", NULL };
 //static const char *customcmd[] = { "xsetroot", "-name", "HelloWorld", NULL};
 //static const char *customcmd[] = { "cd", "$HOME", "&&","./.dwm/customcommand.sh", NULL};
 static const char *customcmd[] = { "./.dwm/customcommand.sh","&", NULL};
@@ -148,6 +148,7 @@ static const char *volumeUPcmd[] = { "./.dwm/audioctr/audio_volup.sh", NULL};
 static const char *volumeDwncmd[] = { "./.dwm/audioctr/audio_voldwn.sh", NULL};
 static const char *volumeMuteTglcmd[] = { "./.dwm/audioctr/audio_mutetoggle.sh", NULL};
 static const char *testcmd2[] = { "xdotool", "key", "Return", NULL};
+static const char *lockcmd[] = { "./.dwm/lockcommand.sh","&", NULL};
 
 //also see: /usr/include/X11/XF86keysym.h
 /*
@@ -190,6 +191,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_i,      incimmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_d,      incimmaster,     {.i = -1 } },
 
+	{ MODKEY|ShiftMask,        	XK_Home,      spawn,          {.v = lockcmd } },
 
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.10} }, //0.05
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.10} }, //0.05
