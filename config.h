@@ -149,6 +149,9 @@ static const char *volumeDwncmd[] = { "./.dwm/audioctr/audio_voldwn.sh", NULL};
 static const char *volumeMuteTglcmd[] = { "./.dwm/audioctr/audio_mutetoggle.sh", NULL};
 static const char *testcmd2[] = { "xdotool", "key", "Return", NULL};
 static const char *lockcmd[] = { "./.dwm/lockcommand.sh","&", NULL};
+static const char *customup[] = { "./.dwm/btn_up.sh","&", NULL};
+static const char *customdn[] = { "./.dwm/btn_dn.sh","&", NULL};
+static const char *customen[] = { "./.dwm/btn_en.sh","&", NULL};
 
 //also see: /usr/include/X11/XF86keysym.h
 /*
@@ -170,12 +173,12 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_p,      spawn,          {.v = customcmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 
-	{ 0,				XF86XK_AudioRaiseVolume,	spawn,	{.v = volumeUPcmd } },
-	{ 0,				XF86XK_AudioLowerVolume,	spawn,	{.v = volumeDwncmd } },
+	{ 0,				XF86XK_AudioRaiseVolume,	spawn,	{.v = customup } },
+	{ 0,				XF86XK_AudioLowerVolume,	spawn,	{.v = customdn } },
 /*	{ 0,				XF86XK_AudioPause,		spawn,	{.v = testcmd } },
 	{ 0,				XF86XK_AudioMute,		spawn,	{.v = volumeMuteTglcmd } },
 */
-	{ 0,				XF86XK_PowerOff,		spawn,	{.v = testcmd2 } },
+	{ 0,				XF86XK_PowerOff,		spawn,	{.v = customen } },
 /*	{ 0,				XF86XK_PowerDown,		spawn,	{.v = testcmd2 } },
 	{ 0,				XF86XK_Hibernate,		spawn,	{.v = testcmd2 } },
 	{ 0,				XF86XK_Sleep,			spawn,	{.v = testcmd2 } },
