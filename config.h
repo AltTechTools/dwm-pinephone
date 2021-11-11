@@ -106,7 +106,7 @@ static const Rule rules[] = {
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 
-static const float hfact     = 0.55; /* factor of master area hight size [0.05..0.95] */
+static const float hfact     = 0.45; /* factor of master area hight size [0.05..0.95] */
 static const int nmaster     = 2;    /* number of clients in master area */
 static const int immaster    = 2;    /* index of main master min. 1*/
 
@@ -151,9 +151,9 @@ static const char *volumeDwncmd[] = { "./.dwm/audioctr/audio_voldwn.sh", NULL};
 static const char *volumeMuteTglcmd[] = { "./.dwm/audioctr/audio_mutetoggle.sh", NULL};
 static const char *testcmd2[] = { "xdotool", "key", "Return", NULL};
 static const char *lockcmd[] = { "./.dwm/lockcommand.sh","&", NULL};
-static const char *customup[] = { "./.dwm/btn_up.sh","&", NULL};
-static const char *customdn[] = { "./.dwm/btn_dn.sh","&", NULL};
-static const char *customen[] = { "./.dwm/btn_en.sh","&", NULL};
+static const char *customup[] = { "./.dwm/pinephone/buttons/btn_up.sh","&", NULL};
+static const char *customdn[] = { "./.dwm/pinephone/buttons/btn_dn.sh","&", NULL};
+static const char *customen[] = { "./.dwm/pinephone/buttons/btn_en.sh","&", NULL};
 
 //also see: /usr/include/X11/XF86keysym.h
 /*
