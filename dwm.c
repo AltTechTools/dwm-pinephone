@@ -115,7 +115,9 @@ typedef struct {
 struct Monitor {
 	char ltsymbol[16];
 	float mfact;
+	float hfact;
 	int nmaster;
+	int immaster;
 	int num;
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
@@ -177,6 +179,7 @@ static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
 static void incnmaster(const Arg *arg);
+static void incimmaster(const Arg *arg);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
@@ -204,6 +207,7 @@ static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
+static void sethfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
@@ -642,7 +646,9 @@ createmon(void)
 	m = ecalloc(1, sizeof(Monitor));
 	m->tagset[0] = m->tagset[1] = 1;
 	m->mfact = mfact;
+	m->hfact = hfact;
 	m->nmaster = nmaster;
+	m->immaster = immaster;
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->lt[0] = &layouts[0];
@@ -977,6 +983,13 @@ void
 incnmaster(const Arg *arg)
 {
 	selmon->nmaster = MAX(selmon->nmaster + arg->i, 0);
+	arrange(selmon);
+}
+
+void
+incimmaster(const Arg *arg)
+{
+	selmon->immaster = MIN(MAX(selmon->immaster + arg->i, 1), selmon->nmaster);
 	arrange(selmon);
 }
 
@@ -1572,6 +1585,9 @@ setfocus(Client *c)
 		XChangeProperty(dpy, root, netatom[NetActiveWindow],
 			XA_WINDOW, 32, PropModeReplace,
 			(unsigned char *) &(c->win), 1);
+		//tst FUD - calc by window size and set to center?
+		//x, y, w, h;
+		//XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, (c->w/2), (c->h/2));
 	}
 	sendevent(c, wmatom[WMTakeFocus]);
 }
@@ -1632,6 +1648,22 @@ setmfact(const Arg *arg)
 	selmon->mfact = f;
 	arrange(selmon);
 }
+
+//test 
+void
+sethfact(const Arg *arg)
+{
+	float f;
+
+	if (!arg || !selmon->lt[selmon->sellt]->arrange)
+		return;
+	f = arg->f < 1.0 ? arg->f + selmon->hfact : arg->f - 1.0;
+	if (f < 0.05 || f > 0.95)
+		return;
+	selmon->hfact = f;
+	arrange(selmon);
+}
+
 
 void
 setup(void)
@@ -1780,27 +1812,102 @@ tagmon(const Arg *arg)
 void
 tile(Monitor *m)
 {
-	unsigned int i, n, h, mw, my, ty;
+	unsigned int i, n, h, mw, my, ty, x ,y ,w;
+	unsigned int mh, mmh, mmi; //new custom
 	Client *c;
 
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
 
+//no clue, maybe change HEIGHT function
+//assumed ww = window width
+//is there a wh? -yes
+//m->nmaster - assumed "is master" boolean flag
+//n is probably the total number of windows
 	if (n > m->nmaster)
-		mw = m->nmaster ? m->ww * m->mfact : 0;
+		mw = m->nmaster ? m->ww * m->mfact : 0; //this makes sense horz. master size change is only reasonable, when also other windows are displayed
 	else
 		mw = m->ww;
+
+	//if (n <= m->nmaster) -> the effect of this, is acctually only allowing the cange, when only master windows are available// --> effects all windows in the master area (*+0.5 -> makes smaller)//n assumed number/index of client //nmaster how much of these are in the master area --> height should only change in the master area
+	//if (n <= m->nmaster) //n assumed number/index of client //nmaster how much of these are in the master area --> height should only change in the master area$
+//	if (n <= m->nmaster)
+//		mh = m->nmaster ? m->wh * m->hfact : 0;
+//	else
+//		mh = m->wh;
+
 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if (i < m->nmaster) {
-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0);
+//			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
+//			h = (mh - my) / (MIN(n, m->nmaster) - i); //orig
+			//if(m->nmaster > 1)
+//			if(n > 1 && m->nmaster > 1)
+//				h = (mh-my)*m->hfact; 
+//			else
+//				h = 0;
+			//if(i > 0)
+//			mh = m->wh; //-my;
+//			if(m->nmaster>1)
+//			mh = m->wh/2; //basiclty 2 categories, master master window & normal master windows
+//			mh = mh-my;
+//			if(n > 1 && MIN(n, m->nmaster)==2){
+//				if(i == 0){
+//				//	mh = mh/2;
+//					mh = mh + (mh * hfact);
+//				} else {
+//					mh = mh - (mh * hfact);
+//				}
+//			}
+			mmh = m->wh * m->hfact; //space reserved for the "master master window"
+			mh = m->wh; //-mmh; //space for (other) master windows
+// for first mastermaster			mh = mh-my;
+			//h = (mh - my) /
+			if(n > 1 && MIN(n, m->nmaster)>=2){
+				//for first as master master
+				//if(i==0) //try last
+				//	h = mh * m->hfact;
+				//else
+				//	h = mh;//h = mh / (MIN(n, m->nmaster-1)-i);
+				//for last
+				//if(i==MIN(2,MIN(n, m->nmaster))-1) //2 being a (todo) custom set up number
+				mmi=(MIN(MIN(n, m->nmaster), m->immaster)-1); //mastermaster index
+
+				if(i<mmi){
+					h=(mh-mmh-my)/(MIN(n, m->nmaster)-i-1);
+				}else if(i==mmi){
+					h=mmh;  //-my;
+					if(MIN(n, m->nmaster)-1>mmi)
+						h=h-my;
+					//mmh=0;
+				}else{
+					h=(m->wh-my)/(MIN(n, m->nmaster)-i);
+				}
+			} else {
+				h = mh / (MIN(n, m->nmaster) - i);
+			}
+		//	}
+			//if(n > 1 && m->nmaster>1)
+			//	h = h + (h * hfact);
+			//else
+			//	h = h - (h * hfact);
+			x = m->wx;
+			y = m->wy +my;
+			w = mw-(2*c->bw);
+			h = h-(2*c->bw);
+			resize(c, x, y, w ,h,0);
+//			resize(c, m->wx, m->wy,mw -(2*c->bw),h-(2*c->bw),0);
+//			resize(c, m->wx, m->wy + my + h, mw - (2*c->bw), h - (2*c->bw), 0);
+//			if (my + HEIGHT(c) < m->wh)
+			//if (my + HEIGHT(c) < mh)
 			if (my + HEIGHT(c) < m->wh)
 				my += HEIGHT(c);
 		} else {
 			h = (m->wh - ty) / (n - i);
+//			h = (mh - ty) / (n - i);
 			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), 0);
-			if (ty + HEIGHT(c) < m->wh)
+//			if (ty + HEIGHT(c) < m->wh)
+			if (ty + HEIGHT(c) < mh)
 				ty += HEIGHT(c);
 		}
 }
