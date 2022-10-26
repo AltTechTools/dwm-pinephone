@@ -1063,6 +1063,26 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
+        //fud tst modify geom here
+        /* **odermonocle, egtl. jedes layout
+                nur NULL "all floating" nicht
+        if (c->isfloating && "is tileing layout"
+                -> get masterwindow geom
+                -> e.v. downscale slightly
+                ->apply to fresh window
+        */
+        Client *c2;
+        if (c->isfloating)
+        //for (c2 = c->mon->sel; c2; c2 = c2->next)
+        for (c2 = c->mon->clients; c2; c2 = c2->next)
+                 if (ISVISIBLE(c)){
+                        c->y=c2->y+(2*c->bw);
+                        c->x=c2->x+(2*c->bw);
+                        c->w=c2->w-(2*c->bw);
+                        c->h=c2->h-(2*c->bw);
+                        break;
+                }
+
 	attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
